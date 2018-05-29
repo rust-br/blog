@@ -1,4 +1,4 @@
-base_url = "rust-br.github.io/blog"
+base_url = "localhost:8080"
 
 # RSS
 title = "Rust Brazil Blog"

@@ -1,0 +1,17 @@
+language:
+  - ruby
+cache:
+  directories:
+    - $HOME/Library/Caches/Homebrew
+scripts:
+  - /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  - brew install gutenberg
+  - gutenberg build --config config.toml
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+  keep-history: true
+  local-dir: public
+  # on:
+  #   branch: master
