@@ -3,7 +3,7 @@ language:
 cache:
   directories:
   - "$HOME/Library/Caches/Homebrew"
-scripts:
+script:
   - ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
   - brew install gutenberg
   - gutenberg build --config config.toml
