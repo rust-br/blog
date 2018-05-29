@@ -1,12 +1,7 @@
-language:
-- ruby
-cache:
-  directories:
-  - "$HOME/Library/Caches/Homebrew"
+before_script:
+  - curl -s -L https://github.com/Keats/gutenberg/releases/download/v0.3.1/gutenberg-v0.3.1-x86_64-unknown-linux-gnu.tar.gz | sudo tar xvzf - -C /usr/local/bin
 script:
-  - ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-  - brew install gutenberg
-  - gutenberg build --config config.toml
+  - gutenberg build
 deploy:
   provider: pages
   skip-cleanup: true
