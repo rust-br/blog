@@ -1,17 +1,24 @@
 base_url = "https://rust-br.github.io/blog"
 
 # RSS
-title = "Rust Brazil Blog"
+title = "rust::br::Blog"
 description = "Um blog com conteudo brasileiro sobre Rust Lang"
 default_language = "pt"
 
-theme = "after-dark"
+theme = "dinkleberg"
 compile_sass = true
 
 highlight_code = true
 highlight_theme = "solarized-dark"
 
-build_search_index = true
+generate_tags_pages = true
+generate_categories_pages = true
 
-# [extra]
-# Put all your custom variables here
+[extra]
+sidebar = [
+    {name = "Social", urls=[
+        {name="Telegram", url="https://t.me/rustlangbr"},
+        {name="Github", url="https://github.com/rust-br"},
+    ]}
+]
+
