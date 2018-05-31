@@ -1,3 +1,5 @@
++++ title = "Understanding Atomics" description = "Explains the basic of atomics in Rust. Comes with a bonus: spinlock implementation." date=2018-05-30 +++
+
 # Abstract
 
 In this post I will explain what are atomics and how to use them in rust.
