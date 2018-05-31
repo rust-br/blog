@@ -14,17 +14,18 @@ highlight_theme = "solarized-dark"
 generate_tags_pages = true
 generate_categories_pages = true
 
-label_tags = "Tags"
-label_tag = "Tag"
+
 label_categories = "Categorias"
 label_category = "Categoria"
+
+[extra]
+label_tags = "Tags"
+label_tag = "Tag"
 label_relative_posts = "Postagens Relacionadas"
 label_next = "Próxima"
 label_previous = "Anterior"
 label_page = "Página"
 label_of = "de"
-
-[extra]
 sidebar = [
     {name = "Social", urls=[
         {name="Telegram", url="https://t.me/rustlangbr"},
