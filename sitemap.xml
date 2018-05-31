@@ -1,6 +1,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     
         <url>
+            <loc>https://rust-br.github.io/blog/hello-world/</loc>
+            
+                <lastmod>2018-05-28</lastmod>
+            
+        </url>
+    
+        <url>
             <loc>https://rust-br.github.io/blog/entendendo-atomicos/</loc>
             
                 <lastmod>2018-05-30</lastmod>
@@ -14,13 +21,6 @@
             
         </url>
     
-        <url>
-            <loc>https://rust-br.github.io/blog/hello-world/</loc>
-            
-                <lastmod>2018-05-28</lastmod>
-            
-        </url>
-    
     
         <url>
             <loc>https://rust-br.github.io/blog/</loc>
@@ -29,6 +29,10 @@
     
         <url>
             <loc>https://rust-br.github.io/blog/categories/</loc>
+        </url>
+    
+        <url>
+            <loc>https://rust-br.github.io/blog/categories/apresentacao/</loc>
         </url>
     
         <url>
@@ -45,11 +49,23 @@
         </url>
     
         <url>
+            <loc>https://rust-br.github.io/blog/tags/amigavel-a-iniciantes/</loc>
+        </url>
+    
+        <url>
             <loc>https://rust-br.github.io/blog/tags/atomics/</loc>
         </url>
     
         <url>
             <loc>https://rust-br.github.io/blog/tags/atomicos/</loc>
+        </url>
+    
+        <url>
+            <loc>https://rust-br.github.io/blog/tags/gutenberg/</loc>
+        </url>
+    
+        <url>
+            <loc>https://rust-br.github.io/blog/tags/introducao/</loc>
         </url>
     
 </urlset>
