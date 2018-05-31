@@ -15,6 +15,12 @@ generate_tags_pages = true
 generate_categories_pages = true
 
 [extra]
+label_tag = "Tags"
+label_relative_posts = "Postagens Relacionadas"
+label_next = "Próxima"
+label_previous = "Anterior"
+label_page = "Página"
+label_of = "de"
 sidebar = [
     {name = "Social", urls=[
         {name="Telegram", url="https://t.me/rustlangbr"},
