@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" itemscope itemtype="http://schema.org/Blog">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -9,7 +9,7 @@
     <!-- Enable responsiveness on mobile devices-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
-    <title>rust::br::Blog</title>
+    <title>RustBR Blog</title>
 
     
         <link rel="apple-touch-icon" sizes="57x57" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;apple-icon-57x57.png">
@@ -29,8 +29,11 @@
         <meta name="msapplication-TileColor" content="#ffffff">
         <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
         <meta name="theme-color" content="#ffffff">
-        <meta name="description" content="Blog dedicado a publição de conteudos da linguagem de programação Rust no Brasil">
-        <meta name="keywords" content="Rust, Lang, Language, Linguagem de Programação, Desenvolvimento, Brazil, Brasil">
+        <meta name="description" itemprop="about" content="Blog dedicado a publição de conteudos da linguagem de programação Rust no Brasil">
+        <meta name="keywords" itemprop="keywords" content="Rust, Lang, Language, Linguagem de Programação, Desenvolvimento, Brazil, Brasil">
+        <meta itemprop="headline" content="RustBR Blog"/>
+        <meta itemprop="educationalUse" content="knowledge share" />
+        <meta itemprop="copyrightYear" content="2018" />
     
 
     
@@ -41,10 +44,17 @@
     
 </head>
 <body>
+    
+    <div 
+     itemscope itemtype="http://schema.org/Organization">
+    </div>
+
     <header class="header">
         <div class="container">
             <a href="/">
-                <h1 class="title">rust::br::Blog</h1>
+                
+                    <h1 class="title">RustBR Blog</h1>
+                
             </a>
         </div>
     </header>
@@ -87,7 +97,7 @@
             <aside class="sidebar">
                 
                     <h3>Social</h3>
-                    <ul>
+                    <ul class="base-list">
                         
                             <li>
                                 <a href="https:&#x2F;&#x2F;t.me&#x2F;rustlangbr">Telegram</a>
