@@ -1,3 +1,3 @@
-[submodule "themes/after-dark"]
-	path = themes/after-dark
-	url = https://github.com/Keats/after-dark
+[submodule "themes/dinkleberg"]
+	path = themes/dinkleberg
+	url = https://github.com/rust-br/dinkleberg.git
