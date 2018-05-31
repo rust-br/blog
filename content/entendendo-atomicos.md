@@ -4,6 +4,7 @@ description = "Explica o básico de atômicos em Rust. Vem com um bônus: implem
 date = 2018-05-30
 tags = ["atômicos"]
 category = "concorrência"
+relative_posts = [ {label="English post", url="/en/understanding-atomics"} ]
 [extra]
 author = "Bruno Corrêa Zimmermann"
 +++
@@ -11,8 +12,6 @@ author = "Bruno Corrêa Zimmermann"
 # Resumão
 
 Neste post, explicarei o que são atômicos e como usá-los em Rust.
-
-[English post in this link](./en/understanding-atomics.md)
 
 # "De qualquer forma, o que seria um 'atômico'?"
 

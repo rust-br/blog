@@ -4,6 +4,7 @@ description = "Explains the basic of atomics in Rust. Comes with a bonus: spinlo
 date = 2018-05-30
 tags = ["atomics"]
 category = "concurrency"
+relative_posts = [ {label="Post em português", url="/entendendo-atomicos"} ]
 [extra]
 author = "Bruno Corrêa Zimmermann"
 +++
@@ -12,7 +13,6 @@ author = "Bruno Corrêa Zimmermann"
 
 In this post I will explain what are atomics and how to use them in rust.
 
-[Post em português neste link](../entendendo-atomicos.md)
 
 # "What is an 'atomic' anyway?"
 
