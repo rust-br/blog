@@ -1,6 +1,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     
         <url>
+            <loc>https://rust-br.github.io/blog/entendendo-atomicos/</loc>
+            
+                <lastmod>2018-05-30</lastmod>
+            
+        </url>
+    
+        <url>
+            <loc>https://rust-br.github.io/blog/en/understanding-atomics/</loc>
+            
+                <lastmod>2018-05-30</lastmod>
+            
+        </url>
+    
+        <url>
             <loc>https://rust-br.github.io/blog/hello-world/</loc>
             
                 <lastmod>2018-05-28</lastmod>
@@ -17,9 +31,25 @@
             <loc>https://rust-br.github.io/blog/categories/</loc>
         </url>
     
+        <url>
+            <loc>https://rust-br.github.io/blog/categories/concorrencia/</loc>
+        </url>
+    
+        <url>
+            <loc>https://rust-br.github.io/blog/categories/concurrency/</loc>
+        </url>
+    
     
         <url>
             <loc>https://rust-br.github.io/blog/tags/</loc>
+        </url>
+    
+        <url>
+            <loc>https://rust-br.github.io/blog/tags/atomics/</loc>
+        </url>
+    
+        <url>
+            <loc>https://rust-br.github.io/blog/tags/atomicos/</loc>
         </url>
     
 </urlset>

@@ -1,0 +1,402 @@
+
+
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/Blog">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title> Understanding Atomics </title>
+
+    
+        <link rel="apple-touch-icon" sizes="57x57" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192"  href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;favicon-16x16.png">
+        <link rel="manifest" href="/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta name="description" itemprop="about" content="Blog dedicado a publição de conteudos da linguagem de programação Rust no Brasil">
+        <meta name="keywords" itemprop="keywords" content="Rust, Lang, Language, Linguagem de Programação, Desenvolvimento, Brazil, Brasil">
+        <meta itemprop="headline" content="RustBR Blog"/>
+        <meta itemprop="educationalUse" content="knowledge share" />
+        <meta itemprop="copyrightYear" content="2018" />
+    
+
+    
+
+    
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600|Source+Code+Pro" rel="stylesheet">
+        <link rel="stylesheet" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;site.css">
+    
+</head>
+<body>
+    
+    <div 
+     itemscope itemtype="http://schema.org/Organization">
+    </div>
+
+    <header class="header">
+        <div class="container">
+            <a href="/">
+                
+                    <h1 class="title">RustBR Blog</h1>
+                
+            </a>
+        </div>
+    </header>
+    <div class="container padding-header">
+        
+<article itemscope itemtype="http://schema.org/BlogPosting" class="post post-page">
+    <header>
+        
+            <a  class="category" href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;categories&#x2F;concurrency&#x2F;">
+                concurrency
+            </a>
+        
+        <h1 class="title" itemprop="headline">Understanding Atomics</h1>
+        <address itemprop="author" itemscope itemtype="https://schema.org/Person">
+            <span itemprop="name">Bruno Corrêa Zimmermann</span>
+        </address>
+        <div class="extra">
+            
+                Tags:
+                
+                    <a href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;tags&#x2F;atomics&#x2F;">atomics</a>
+                    
+                
+            
+
+            
+                <div class="relative-posts">
+                    Postagens Relacionadas:
+                    <ul class="base-list">
+                        
+                            <li>
+                                - <a href="&#x2F;entendendo-atomicos">Post em português</a>
+                            </li>
+                        
+                    </ul>
+                </div>
+            
+        </div>
+    </header>
+    <div itemprop="articleBody" class="body">
+      <h1 id="abstract">Abstract</h1>
+<p>In this post I will explain what are atomics and how to use them in rust.</p>
+<h1 id="what-is-an-atomic-anyway">"What is an 'atomic' anyway?"</h1>
+<p>Atomics are data types on which operations are indivisible,
+or the indivisible operations by themselves. Indivisible here means that
+the side effects of the operations are only observable when the operation
+is done. Generally, machines provide read and write operations over its
+native integer both indivisible and divisible.</p>
+<p>If you have ever heard of  &quot;data races&quot;, divisible read and write causes them.
+Suppose we are on a 64-bit word machine. Threads <code>A</code>, <code>B</code> and <code>C</code> have
+access to address <code>p</code>. If <code>A</code> does a &quot;divisible&quot; write on <code>p</code> with <code>x</code>,
+at the same time <code>C</code> does a &quot;divisible&quot; read, <code>C</code> might get half of previous
+bits of <code>p</code> and half bits of <code>x</code>. Or a quarter of bits. Or the previous state.
+Or the new state. It's actualy hard to predict. If thread <code>A</code> writes
+&quot;divisibily&quot; again on <code>p</code> with <code>y</code> at the same time thread <code>B</code> writes
+&quot;divisibily&quot; <code>z</code>, the resulting value of <code>p</code> might be a mix of both states or
+something similar.</p>
+<p>Because the behavior might vary between different machines, programming
+languages such as Rust and C++ defines data races as undefined behavior. The
+actual behavior might not be &quot;leaving an intermediate value&quot;, but it could
+be anything, from throwing an exception to setting the processor on fire.
+You probably noticed that the problem here are the &quot;divisible&quot; operations.
+If <code>A</code> had atomically written <code>x</code> on <code>p</code>, and <code>C</code> had atomically read from
+<code>p</code>, <code>C</code> would see the bits of <code>p</code> either before of <code>A</code>'s write or after the
+write, but not in the middle. The same apply for <code>A</code> and <code>B</code> writing
+atomically; the final state would be either <code>y</code> or <code>z</code>, but not anything else.</p>
+<p>There is also race condition. Race condition is similar to data race, but it
+can happen even with atomics. Race condition is about dependency between the
+order of asynchronous events, but it does not corrupt data. Race condition
+is what generally makes atomic data structures hard to be written. One should
+think carefully when writing atomic code.</p>
+<h1 id="atomics-in-rust">Atomics in Rust</h1>
+<p>Currently (rust nightly 1.28 and stable 1.26) these atomic data types were
+stabilized: <code>AtomicPtr&lt;T&gt;</code>, <code>AtomicUsize</code>, <code>AtomicIsize</code> and <code>AtomicBool</code>.
+They are all located in <code>core::sync::atomic</code> (or <code>std::sync::atomic</code>).
+To explain, I will pick the simplest one: <code>AtomicBool</code>.</p>
+<h2 id="atomicbool"><code>AtomicBool</code></h2>
+<p>It is very simple to create one:</p>
+<pre style="background-color:#002b36">
+<span style="background-color:#002b36;color:#268bd2;">let</span><span style="background-color:#002b36;color:#839496;"> atomic_bool </span><span style="background-color:#002b36;color:#859900;">= </span><span style="background-color:#002b36;color:#839496;">AtomicBool::new(</span><span style="background-color:#002b36;color:#b58900;">true</span><span style="background-color:#002b36;color:#839496;">);
+</span></pre>
+<p>Now let's make an atomic read. But wait... uh oh... <code>AtomicBool::load</code>
+accepts two arguments: an immutable reference to <code>self</code> and another
+argument of type <code>Ordering</code>. The reference to <code>self</code> is easily understandable
+but what about <code>Ordering</code>? <code>Ordering</code> is a type which determinates the...
+the... order? Yes, the order related to other operations and other threads.
+Let's see the definition of <code>Ordering</code>:</p>
+<pre style="background-color:#002b36">
+<span style="background-color:#002b36;color:#859900;">pub </span><span style="background-color:#002b36;color:#268bd2;">enum </span><span style="background-color:#002b36;color:#839496;">Ordering {
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">Relaxed,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">Release,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">Acquire,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">AcqRel,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">SeqCst,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#586e75;">// some variants omitted
+</span><span style="background-color:#002b36;color:#839496;">}
+</span></pre>
+<p>There are, roughly speaking, two kinds of CPUs related to orderings: the weak
+and the strong. The weak processors have naturally weak guarantees on the
+orderings, while the strong processors have naturally strong guarantees on the
+orderings. It is generally low-cost for strong-processors to perform <code>Acquire</code>,
+<code>Relase</code> and <code>AcqRel</code>, while they are high-cost for weak-processors. For all
+of them <code>Relaxed</code> is low-cost and <code>SeqCst</code> is high-cost. Examples of weak-
+processors are ARM-archs, and examples of strong-processors are the ones
+x86/x86_64-archs.</p>
+<p>The only valid variants for <code>load</code> to be called with are: <code>Relaxed</code>, <code>Acquire</code>
+and <code>SeqCst</code>. Don't worry, the other variants will be explained later. <code>Relaxed</code>
+is somewhat like &quot;the order does not matter at all&quot;. This allows both
+the compiler and the CPU to reorder the operation. <code>SeqCst</code> means &quot;sequentially
+consistent&quot;; it should not be reordered at all! Everything before it happens
+before it, and everything after it happens after it.</p>
+<p><code>Acquire</code> is a bit more complex. It is the &quot;complement&quot; of <code>Release</code>.
+Everything (generally <code>store</code>-like operations) that happens after the <code>Acquire</code>
+stays after it. But the compiler and the CPU are free to reorder anything that
+happens before it. It is designed to be used with <code>load</code>-like operations when
+acquiring locks.</p>
+<p>Let's see an example with <code>AtomicBool::load</code>:</p>
+<pre style="background-color:#002b36">
+<span style="background-color:#002b36;color:#859900;">use </span><span style="background-color:#002b36;color:#839496;">std::sync::atomic::{
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">AtomicBool,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">Ordering::</span><span style="background-color:#002b36;color:#859900;">*</span><span style="background-color:#002b36;color:#839496;">,
+</span><span style="background-color:#002b36;color:#839496;">};
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">print_if_it_is</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#268bd2;">atomic</span><span style="background-color:#002b36;color:#839496;">: </span><span style="background-color:#002b36;color:#859900;">&amp;</span><span style="background-color:#002b36;color:#839496;">AtomicBool) {
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">if</span><span style="background-color:#002b36;color:#839496;"> atomic.</span><span style="background-color:#002b36;color:#859900;">load</span><span style="background-color:#002b36;color:#839496;">(Acquire) {
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">println!(&quot;</span><span style="background-color:#002b36;color:#2aa198;">It is!</span><span style="background-color:#002b36;color:#839496;">&quot;);
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">}
+</span></pre>
+<p>Let's jump into the next operation: <code>store</code>. <code>store</code> accepts a reference to
+<code>self</code>, the new value (of type <code>bool</code>), and an <code>Ordering</code>. The valid
+<code>Ordering</code>s are <code>Relaxed</code>, <code>Release</code> and <code>SeqCst</code>. <code>Release</code>, as said before,
+is used as a pair with <code>Acquire</code>. Everything before <code>Release</code> happens before
+it, but the compiler and the CPU are free to reorder anything that happens
+after it. It is intended to be used when releasing a lock.</p>
+<p>Let's see an example:</p>
+<pre style="background-color:#002b36">
+<span style="background-color:#002b36;color:#859900;">use </span><span style="background-color:#002b36;color:#839496;">std::sync::atomic::{
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">AtomicBool,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">Ordering::</span><span style="background-color:#002b36;color:#859900;">*</span><span style="background-color:#002b36;color:#839496;">,
+</span><span style="background-color:#002b36;color:#839496;">};
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">store_something</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#268bd2;">atomic</span><span style="background-color:#002b36;color:#839496;">: </span><span style="background-color:#002b36;color:#859900;">&amp;</span><span style="background-color:#002b36;color:#839496;">AtomicBool) {
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">atomic.</span><span style="background-color:#002b36;color:#859900;">store</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#b58900;">false</span><span style="background-color:#002b36;color:#839496;">, Release);
+</span><span style="background-color:#002b36;color:#839496;">}
+</span></pre>
+<p>You may have noticed two things. If you did not notice them, do it now. First:
+<code>store</code> just needs an immutable reference. This means that it does not need
+&quot;outer&quot; mutability, but it has inner mutability. Second: atomics are only
+useful with shared references. They don't  have anything like &quot;<code>clone</code>&quot;; to
+clone you can do somewhat <code>let copied = AtomicBool::new(src.load(Acquire));</code>.
+But this does not share the atomic. Therefore, it is a common pattern to
+encapsulate the atomic (or the struct which keeps the atomic) into an <code>Arc</code>.</p>
+<p>There are at least three more important operations <code>swap</code>, <code>compare_and_swap</code>,
+<code>compare_exchange_*</code>. Swap is pretty simple: it swaps its argument (of type
+<code>bool</code>) with the stored value, and returns the stored value. <code>Ordering</code> on
+swap accepts any of the <code>Ordering</code>s. <code>compare_and_swap</code> takes a <code>bool</code>, say,
+&quot;current&quot;, another <code>bool</code>, say &quot;new&quot;, and the <code>Ordering</code> (which can be any).
+<code>compare_and_swap</code> is a really important atomic operation. It compares the
+argument &quot;current&quot; with the stored value. If they are the same, the operation
+swaps the stored value with &quot;new&quot;. In any case, the stored value is returned.
+The operation succeeds if the return value is equal to the &quot;current&quot; argument.</p>
+<p>There is also <code>compare_exchange_strong</code> (just <code>compare_exchange</code> in Rust), and
+<code>compare_exchange_weak</code> (which may fail more often). They are similar to
+<code>compare_and_swap</code>, except that they take two orderings: one for success, and
+one for failure. Also, in Rust they return a <code>Result</code>. The fact that these
+operations return a <code>Result</code> allows <code>compare_exchange_weak</code> to fail even if
+the comparison succeed. Important: success <code>Ordering</code> accepts the same
+<code>Ordering</code>s as a <code>swap</code>, but failure <code>Ordering</code> has to be weaker than success
+or equivalent, but valid for <code>load</code>.</p>
+<p>Wait! I did not explain <code>Ordering::AcqRel</code>. It is what it seems: it combines
+<code>Acquire</code> when loading and <code>Release</code> when storing for operations that
+load/store atomically. Although I explained all of these using <code>AtomicBool</code>,
+they are pretty much common primitive operations for all primitive atomic data
+types. All atomic data types in Rust have at least these operations: <code>load</code>,
+<code>store</code>, <code>swap</code>, <code>compare_and_swap</code>, <code>compare_exchange</code>,
+<code>compare_exchange_weak</code>. Enough of talk, let's act!</p>
+<h2 id="lock-free-logical-and">Lock-free logical AND</h2>
+<p>The function below receives an atomic boolean, an ordinary boolean, stores the
+logical AND of them and returns the previous value.</p>
+<pre style="background-color:#002b36">
+<span style="background-color:#002b36;color:#859900;">use </span><span style="background-color:#002b36;color:#839496;">std::sync::atomic::{AtomicBool, Ordering::{</span><span style="background-color:#002b36;color:#859900;">*</span><span style="background-color:#002b36;color:#839496;">, </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">}};
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">lockfree_and</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#268bd2;">x</span><span style="background-color:#002b36;color:#839496;">: </span><span style="background-color:#002b36;color:#859900;">&amp;</span><span style="background-color:#002b36;color:#839496;">AtomicBool, </span><span style="background-color:#002b36;color:#268bd2;">y</span><span style="background-color:#002b36;color:#839496;">: </span><span style="background-color:#002b36;color:#268bd2;">bool</span><span style="background-color:#002b36;color:#839496;">, </span><span style="background-color:#002b36;color:#268bd2;">ord</span><span style="background-color:#002b36;color:#839496;">: Ordering) -&gt; </span><span style="background-color:#002b36;color:#268bd2;">bool </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#268bd2;">let </span><span style="background-color:#002b36;color:#859900;">mut</span><span style="background-color:#002b36;color:#839496;"> stored </span><span style="background-color:#002b36;color:#859900;">=</span><span style="background-color:#002b36;color:#839496;"> x.</span><span style="background-color:#002b36;color:#859900;">load</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#859900;">match</span><span style="background-color:#002b36;color:#839496;"> ord {
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">AcqRel </span><span style="background-color:#002b36;color:#859900;">=&gt;</span><span style="background-color:#002b36;color:#839496;"> Acquire,
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">Release </span><span style="background-color:#002b36;color:#859900;">=&gt;</span><span style="background-color:#002b36;color:#839496;"> Relaxed,
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">o </span><span style="background-color:#002b36;color:#859900;">=&gt;</span><span style="background-color:#002b36;color:#839496;"> o,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">});
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">loop </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#268bd2;">let</span><span style="background-color:#002b36;color:#839496;"> inner </span><span style="background-color:#002b36;color:#859900;">=</span><span style="background-color:#002b36;color:#839496;"> x.</span><span style="background-color:#002b36;color:#859900;">compare_and_swap</span><span style="background-color:#002b36;color:#839496;">(stored, stored </span><span style="background-color:#002b36;color:#859900;">&amp;</span><span style="background-color:#002b36;color:#839496;"> y, ord);
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#859900;">if</span><span style="background-color:#002b36;color:#839496;"> inner </span><span style="background-color:#002b36;color:#859900;">==</span><span style="background-color:#002b36;color:#839496;"> stored {
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#859900;">break</span><span style="background-color:#002b36;color:#839496;"> inner;
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">stored </span><span style="background-color:#002b36;color:#859900;">=</span><span style="background-color:#002b36;color:#839496;"> inner;
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">}
+</span></pre>
+<p>Note that side-effects are only visible after we're done. This is, in some way,
+&quot;atomic&quot;. Generally, this kind of operation is called &quot;lock-free&quot; because it
+does not use any kind of lock. Although we have a loop, we do not depend on
+any thread &quot;free-ing&quot; the resource. This is not a lock.</p>
+<p>And, well... Rust already provides us a method <code>AtomicBool::fetch_and</code>, which
+probably is translated into a single native instruction. I just wanted to show
+you that with the primitives <code>load</code> and <code>compare_and_swap</code>, the operation can
+be implemented via software.
+<a href="https://doc.rust-lang.org/std/sync/atomic/struct.AtomicBool.html#method.fetch_and">Take a look here</a>,
+we have other methods on <code>AtomicBool</code>, such as <code>nand</code>, <code>or</code>, and <code>xor</code>.</p>
+<p>As you may suspect, <code>AtomicUsize</code> and <code>AtomicIsize</code> have their own methods with
+basic arithmetic (add and sub) and bitwise. And all of them are implementable
+via software, but probably are translated into a single native instruction.
+Although the API does not provide <code>mul</code> and <code>div</code>, it is not hard to implement
+them.</p>
+<h2 id="a-note-on">A note on <code>AtomicPtr<T></code></h2>
+<p><code>AtomicPtr&lt;T&gt;</code> can be confusing. The methods <code>load</code> and <code>store</code> read and write
+the address or its content? The answer is: the address. They operate on <code>*mut T</code>.
+To load the contents is pretty much another operation, but it is not atomic and
+and it is very unsafe.</p>
+<h2 id="send"><code>Send</code> and <code>Sync</code></h2>
+<p>You may have heard of the auto traits <code>Send</code> and <code>Sync</code>. They matter a lot in a
+concurrent environment. <code>T: Send</code> means <code>T</code> is safe to be sent to another
+thread. <code>T: Sync</code> means <code>&amp;T</code> is safe to be shared between threads. Atomic data
+types implement both <code>Send</code> and <code>Sync</code>, so it is safe to share and send them
+among threads.</p>
+<h2 id="bonus-implementing-a-spinlock">Bonus: Implementing a spinlock</h2>
+<pre style="background-color:#002b36">
+<span style="background-color:#002b36;color:#859900;">pub </span><span style="background-color:#002b36;color:#268bd2;">mod </span><span style="background-color:#002b36;color:#839496;">spinlock {
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">use </span><span style="background-color:#002b36;color:#839496;">std::{
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">cell::UnsafeCell,
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">fmt,
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">ops::{Deref, DerefMut},
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">sync::atomic::{
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">AtomicBool,
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">Ordering::</span><span style="background-color:#002b36;color:#859900;">*</span><span style="background-color:#002b36;color:#839496;">,
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">},
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">};
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">#[</span><span style="background-color:#002b36;color:#268bd2;">derive</span><span style="background-color:#002b36;color:#839496;">(Debug)]
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">pub </span><span style="background-color:#002b36;color:#268bd2;">struct </span><span style="background-color:#002b36;color:#839496;">Mutex&lt;T&gt; {
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#268bd2;">locked</span><span style="background-color:#002b36;color:#839496;">: AtomicBool,
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#268bd2;">inner</span><span style="background-color:#002b36;color:#839496;">: UnsafeCell&lt;T&gt;,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">#[</span><span style="background-color:#002b36;color:#268bd2;">derive</span><span style="background-color:#002b36;color:#839496;">(Debug, Clone, Copy)]
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">pub </span><span style="background-color:#002b36;color:#268bd2;">struct </span><span style="background-color:#002b36;color:#839496;">MutexErr;
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">pub </span><span style="background-color:#002b36;color:#268bd2;">struct </span><span style="background-color:#002b36;color:#839496;">MutexGuard&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt;
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">where
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">T: &#39;a
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#268bd2;">mutex</span><span style="background-color:#002b36;color:#839496;">: </span><span style="background-color:#002b36;color:#859900;">&amp;&#39;a </span><span style="background-color:#002b36;color:#839496;">Mutex&lt;T&gt;,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#268bd2;">impl</span><span style="background-color:#002b36;color:#839496;">&lt;T&gt; Mutex&lt;T&gt; {
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#859900;">pub </span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">new</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#268bd2;">data</span><span style="background-color:#002b36;color:#839496;">: T) -&gt; </span><span style="background-color:#002b36;color:#268bd2;">Self </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#268bd2;">Self </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">                </span><span style="background-color:#002b36;color:#839496;">locked: AtomicBool::new(</span><span style="background-color:#002b36;color:#b58900;">false</span><span style="background-color:#002b36;color:#839496;">),
+</span><span style="background-color:#002b36;color:#839496;">                </span><span style="background-color:#002b36;color:#839496;">inner: UnsafeCell::new(data),
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#859900;">pub </span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">try_lock</span><span style="background-color:#002b36;color:#839496;">&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">&gt;(</span><span style="background-color:#002b36;color:#859900;">&amp;&#39;a </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">) -&gt; Result&lt;MutexGuard&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt;, MutexErr&gt; {
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#859900;">if </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">.locked.</span><span style="background-color:#002b36;color:#859900;">swap</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#b58900;">true</span><span style="background-color:#002b36;color:#839496;">, Acquire) {
+</span><span style="background-color:#002b36;color:#839496;">                </span><span style="background-color:#002b36;color:#859900;">Err</span><span style="background-color:#002b36;color:#839496;">(MutexErr)
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">} </span><span style="background-color:#002b36;color:#859900;">else </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">                </span><span style="background-color:#002b36;color:#859900;">Ok</span><span style="background-color:#002b36;color:#839496;">(MutexGuard {
+</span><span style="background-color:#002b36;color:#839496;">                    </span><span style="background-color:#002b36;color:#839496;">mutex: </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">,
+</span><span style="background-color:#002b36;color:#839496;">                </span><span style="background-color:#002b36;color:#839496;">})
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#859900;">pub </span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">lock</span><span style="background-color:#002b36;color:#839496;">&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">&gt;(</span><span style="background-color:#002b36;color:#859900;">&amp;&#39;a </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">) -&gt; MutexGuard&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt; {
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#859900;">loop </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">                </span><span style="background-color:#002b36;color:#859900;">if </span><span style="background-color:#002b36;color:#268bd2;">let </span><span style="background-color:#002b36;color:#859900;">Ok</span><span style="background-color:#002b36;color:#839496;">(m) </span><span style="background-color:#002b36;color:#859900;">= </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">.</span><span style="background-color:#002b36;color:#859900;">try_lock</span><span style="background-color:#002b36;color:#839496;">() {
+</span><span style="background-color:#002b36;color:#839496;">                    </span><span style="background-color:#002b36;color:#859900;">break</span><span style="background-color:#002b36;color:#839496;"> m;
+</span><span style="background-color:#002b36;color:#839496;">                </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">unsafe </span><span style="background-color:#002b36;color:#268bd2;">impl</span><span style="background-color:#002b36;color:#839496;">&lt;T&gt; Send </span><span style="background-color:#002b36;color:#859900;">for </span><span style="background-color:#002b36;color:#839496;">Mutex&lt;T&gt;
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">where
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">T: Send,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">unsafe </span><span style="background-color:#002b36;color:#268bd2;">impl</span><span style="background-color:#002b36;color:#839496;">&lt;T&gt; Sync </span><span style="background-color:#002b36;color:#859900;">for </span><span style="background-color:#002b36;color:#839496;">Mutex&lt;T&gt;
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">where
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">T: Send,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#268bd2;">impl</span><span style="background-color:#002b36;color:#839496;">&lt;T&gt; Drop </span><span style="background-color:#002b36;color:#859900;">for </span><span style="background-color:#002b36;color:#839496;">Mutex&lt;T&gt; {
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">drop</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#859900;">&amp;mut </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">) {
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#859900;">unsafe </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">                </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">.inner.</span><span style="background-color:#002b36;color:#859900;">get</span><span style="background-color:#002b36;color:#839496;">().</span><span style="background-color:#002b36;color:#859900;">drop_in_place</span><span style="background-color:#002b36;color:#839496;">()
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#268bd2;">impl</span><span style="background-color:#002b36;color:#839496;">&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt; Deref </span><span style="background-color:#002b36;color:#859900;">for </span><span style="background-color:#002b36;color:#839496;">MutexGuard&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt; {
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#268bd2;">type </span><span style="background-color:#002b36;color:#839496;">Target </span><span style="background-color:#002b36;color:#859900;">=</span><span style="background-color:#002b36;color:#839496;"> T;
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">deref</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#859900;">&amp;</span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">) -&gt; </span><span style="background-color:#002b36;color:#859900;">&amp;</span><span style="background-color:#002b36;color:#839496;">T {
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#859900;">unsafe </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">                </span><span style="background-color:#002b36;color:#859900;">&amp;*</span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">.mutex.inner.</span><span style="background-color:#002b36;color:#859900;">get</span><span style="background-color:#002b36;color:#839496;">()
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#268bd2;">impl</span><span style="background-color:#002b36;color:#839496;">&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt; DerefMut </span><span style="background-color:#002b36;color:#859900;">for </span><span style="background-color:#002b36;color:#839496;">MutexGuard&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt; {
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">deref_mut</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#859900;">&amp;mut </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">) -&gt; </span><span style="background-color:#002b36;color:#859900;">&amp;mut</span><span style="background-color:#002b36;color:#839496;"> T {
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#859900;">unsafe </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">                </span><span style="background-color:#002b36;color:#859900;">&amp;mut *</span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">.mutex.inner.</span><span style="background-color:#002b36;color:#859900;">get</span><span style="background-color:#002b36;color:#839496;">()
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#268bd2;">impl</span><span style="background-color:#002b36;color:#839496;">&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt; fmt::Debug </span><span style="background-color:#002b36;color:#859900;">for </span><span style="background-color:#002b36;color:#839496;">MutexGuard&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt;
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#859900;">where
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">T: fmt::Debug,
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">{
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">fmt</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#859900;">&amp;</span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">, </span><span style="background-color:#002b36;color:#268bd2;">fmtr</span><span style="background-color:#002b36;color:#839496;">: </span><span style="background-color:#002b36;color:#859900;">&amp;mut </span><span style="background-color:#002b36;color:#839496;">fmt::Formatter) -&gt; fmt::Result {
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">write!(fmtr, &quot;</span><span style="background-color:#002b36;color:#cb4b16;">{:?}</span><span style="background-color:#002b36;color:#839496;">&quot;, </span><span style="background-color:#002b36;color:#859900;">&amp;**</span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">)
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#268bd2;">impl</span><span style="background-color:#002b36;color:#839496;">&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt; Drop </span><span style="background-color:#002b36;color:#859900;">for </span><span style="background-color:#002b36;color:#839496;">MutexGuard&lt;</span><span style="background-color:#002b36;color:#859900;">&#39;a</span><span style="background-color:#002b36;color:#839496;">, T&gt; {
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#268bd2;">fn </span><span style="background-color:#002b36;color:#b58900;">drop</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#859900;">&amp;mut </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">) {
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#268bd2;">let</span><span style="background-color:#002b36;color:#839496;"> _prev </span><span style="background-color:#002b36;color:#859900;">= </span><span style="background-color:#002b36;color:#268bd2;">self</span><span style="background-color:#002b36;color:#839496;">.mutex.locked.</span><span style="background-color:#002b36;color:#859900;">swap</span><span style="background-color:#002b36;color:#839496;">(</span><span style="background-color:#002b36;color:#b58900;">false</span><span style="background-color:#002b36;color:#839496;">, Release);
+</span><span style="background-color:#002b36;color:#839496;">            </span><span style="background-color:#002b36;color:#839496;">debug_assert!(_prev);
+</span><span style="background-color:#002b36;color:#839496;">        </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">    </span><span style="background-color:#002b36;color:#839496;">}
+</span><span style="background-color:#002b36;color:#839496;">
+</span><span style="background-color:#002b36;color:#839496;">}
+</span></pre>
+    </div>
+</article>
+
+
+        
+
+    </div>
+</body>
+</html>
