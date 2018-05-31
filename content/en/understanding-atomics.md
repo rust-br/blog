@@ -1,14 +1,18 @@
 +++
 title = "Understanding Atomics"
 description = "Explains the basic of atomics in Rust. Comes with a bonus: spinlock implementation."
-date=2018-05-30
+date = 2018-05-30
 [extra]
 author = "Bruno Corrêa Zimmermann"
+category = "concurrency"
+tags = ["atomics"]
 +++
 
 # Abstract
 
 In this post I will explain what are atomics and how to use them in rust.
+
+[Post em português neste link](../entendendo-atomicos.md)
 
 # "What is an 'atomic' anyway?"
 
@@ -38,6 +42,12 @@ If `A` had atomically written `x` on `p`, and `C` had atomically read from
 write, but not in the middle. The same apply for `A` and `B` writing
 atomically; the final state would be either `y` or `z`, but not anything else.
 
+There is also race condition. Race condition is similar to data race, but it
+can happen even with atomics. Race condition is about dependency between the
+order of asynchronous events, but it does not corrupt data. Race condition
+is what generally makes atomic data structures hard to be written. One should
+think carefully when writing atomic code.
+
 # Atomics in Rust
 
 Currently (rust nightly 1.28 and stable 1.26) these atomic data types were
@@ -54,7 +64,7 @@ let atomic_bool = AtomicBool::new(true);
 ```
 
 Now let's make an atomic read. But wait... uh oh... `AtomicBool::load`
-accepts two arguments: san immutable reference to `self` and another
+accepts two arguments: an immutable reference to `self` and another
 argument of type `Ordering`. The reference to `self` is easily understandable
 but what about `Ordering`? `Ordering` is a type which determinates the...
 the... order? Yes, the order related to other operations and other threads.
@@ -88,10 +98,10 @@ consistent"; it should not be reordered at all! Everything before it happens
 before it, and everything after it happens after it.
 
 `Acquire` is a bit more complex. It is the "complement" of `Release`.
-Everything (generally `store`s) that happens after the `Acquire` stays after
-it. But the compiler and the CPU are free to reorder anything that happens
-before it. It is designed to be used with `load`-like operations when acquiring
-locks.
+Everything (generally `store`-like operations) that happens after the `Acquire`
+stays after it. But the compiler and the CPU are free to reorder anything that
+happens before it. It is designed to be used with `load`-like operations when
+acquiring locks.
 
 Let's see an example with `AtomicBool::load`:
 
@@ -111,7 +121,7 @@ fn print_if_it_is(atomic: &AtomicBool) {
 Let's jump into the next operation: `store`. `store` accepts a reference to
 `self`, the new value (of type `bool`), and an `Ordering`. The valid
 `Ordering`s are `Relaxed`, `Release` and `SeqCst`. `Release`, as said before,
-is used as a pair with `Acquire`. Everything before `Release` it happens before
+is used as a pair with `Acquire`. Everything before `Release` happens before
 it, but the compiler and the CPU are free to reorder anything that happens
 after it. It is intended to be used when releasing a lock.
 
@@ -151,7 +161,9 @@ There is also `compare_exchange_strong` (just `compare_exchange` in Rust), and
 `compare_and_swap`, except that they take two orderings: one for success, and
 one for failure. Also, in Rust they return a `Result`. The fact that these
 operations return a `Result` allows `compare_exchange_weak` to fail even if
-the comparison succeed.
+the comparison succeed. Important: success `Ordering` accepts the same
+`Ordering`s as a `swap`, but failure `Ordering` has to be weaker than success
+or equivalent, but valid for `load`.
 
 Wait! I did not explain `Ordering::AcqRel`. It is what it seems: it combines
 `Acquire` when loading and `Release` when storing for operations that
@@ -185,7 +197,7 @@ fn lockfree_and(x: &AtomicBool, y: bool, ord: Ordering) -> bool {
 }
 ```
 
-Note that side-effects are only visible after we're done. This is in, some way,
+Note that side-effects are only visible after we're done. This is, in some way,
 "atomic". Generally, this kind of operation is called "lock-free" because it
 does not use any kind of lock. Although we have a loop, we do not depend on
 any thread "free-ing" the resource. This is not a lock.
@@ -199,7 +211,7 @@ we have other methods on `AtomicBool`, such as `nand`, `or`, and `xor`.
 
 As you may suspect, `AtomicUsize` and `AtomicIsize` have their own methods with
 basic arithmetic (add and sub) and bitwise. And all of them are implementable
-via software, but probably translated into a single native instruction.
+via software, but probably are translated into a single native instruction.
 Although the API does not provide `mul` and `div`, it is not hard to implement
 them.
 
