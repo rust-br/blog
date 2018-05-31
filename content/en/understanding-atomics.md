@@ -4,8 +4,8 @@ description = "Explains the basic of atomics in Rust. Comes with a bonus: spinlo
 date = 2018-05-30
 tags = ["atomics"]
 category = "concurrency"
-relative_posts = [ {label="Post em português", url="/entendendo-atomicos"} ]
 [extra]
+relative_posts = [ {label="Post em português", url="/entendendo-atomicos"} ]
 author = "Bruno Corrêa Zimmermann"
 +++
 

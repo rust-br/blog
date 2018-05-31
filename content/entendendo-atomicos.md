@@ -4,8 +4,8 @@ description = "Explica o básico de atômicos em Rust. Vem com um bônus: implem
 date = 2018-05-30
 tags = ["atômicos"]
 category = "concorrência"
-relative_posts = [ {label="English post", url="/en/understanding-atomics"} ]
 [extra]
+relative_posts = [ {label="English post", url="/en/understanding-atomics"} ]
 author = "Bruno Corrêa Zimmermann"
 +++
 
