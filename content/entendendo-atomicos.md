@@ -2,8 +2,8 @@
 title = "Entendendo Atômicos"
 description = "Explica o básico de atômicos em Rust. Vem com um bônus: implementação de spinlock."
 date = 2018-05-30
-category = "concorrência"
 tags = ["atômicos"]
+category = "concorrência"
 [extra]
 author = "Bruno Corrêa Zimmermann"
 +++
