@@ -13,5 +13,13 @@
         </url>
     
     
+        <url>
+            <loc>https://rust-br.github.io/blog/categories/</loc>
+        </url>
+    
+    
+        <url>
+            <loc>https://rust-br.github.io/blog/tags/</loc>
+        </url>
     
 </urlset>
