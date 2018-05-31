@@ -9,7 +9,7 @@ theme = "dinkleberg"
 compile_sass = true
 
 highlight_code = true
-highlight_theme = "solarized-dark"
+highlight_theme = "gruvbox-dark"
 
 generate_tags_pages = true
 generate_categories_pages = true
