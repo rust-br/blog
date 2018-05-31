@@ -1,4 +1,8 @@
-+++ title = "Understanding Atomics" description = "Explains the basic of atomics in Rust. Comes with a bonus: spinlock implementation." date=2018-05-30 +++
++++
+title = "Understanding Atomics"
+description = "Explains the basic of atomics in Rust. Comes with a bonus: spinlock implementation."
+date=2018-05-30
++++
 
 # Abstract
 
