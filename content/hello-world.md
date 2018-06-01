@@ -9,10 +9,10 @@ tags = ["amigavel a iniciantes", "introdução", "gutenberg"]
 author="Guilherme Diego"
 +++
 
-Olá, me chamo Guilherme Diego e sou muitas coisas nessa vida e uma delas é ser entusiasta de coisas que em meu ponto de vista são boas, e esse foi o meu caso com RUST. Desde que comecei minha jornada pelo maravilhoso mundo de rust, eu tenho recebido ajuda da incrível comunidade que é a Rust Brasil pelo [telegram](), e já não é recente o assunto de: *"Devíamos criar um blog"*. Eu sou *front-end* já fazem quase 6 anos, e me responsabilizei por erguer os templates e tomar a frente de organizar o blog junto com outras pessoas que queriam dividir conhecimentos. O que nos faz chegar ao motivo dessa postagem: Introduzir como o Blog foi feito e como contribuir para ele.
+Olá, me chamo Guilherme Diego e sou muitas coisas nessa vida e uma delas é ser entusiasta de coisas que em meu ponto de vista são boas, e esse foi o meu caso com RUST. Desde que comecei minha jornada pelo maravilhoso mundo de rust, eu tenho recebido ajuda da incrível comunidade que é a Rust Brasil pelo [telegram](https://t.me/rustlangbr), e já não é recente o assunto de: *"Devíamos criar um blog"*. Eu sou *front-end* já fazem quase 6 anos, e me responsabilizei por erguer os templates e tomar a frente de organizar o blog junto com outras pessoas que queriam dividir conhecimentos. O que nos faz chegar ao motivo dessa postagem: Introduzir como o Blog foi feito e como contribuir para ele.
 
 ## Gutenberg (ou Dinkleberg)
-Quando iniciamos nossas discussões para o que usaríamos para erguer o blog estático no Github, e optamos pelo [**Gutenberg**](), uma alternativa a grandes nomes como Hugo, Jenkyll e Cobalt, porem, escrito em Rust <3. Gutenberg tem uma mecânica muito simples, ele é composto por 4 pastas:
+Quando iniciamos nossas discussões para o que usaríamos para erguer o blog estático no Github, e optamos pelo [**Gutenberg**](https://www.getgutenberg.io/), uma alternativa a grandes nomes como Hugo, Jenkyll e Cobalt, porem, escrito em Rust <3. Gutenberg tem uma mecânica muito simples, ele é composto por 4 pastas:
 
 - **content**: Onde fica as páginas
 - **templates**: Onde fica os *templates* a serem rendenizados
@@ -23,13 +23,13 @@ Por incrível que pareça, um tema nada mais é que um site Gutenberg sobrescrit
 
 ![753986_1](https://user-images.githubusercontent.com/10289071/40806112-dd79ae78-64f6-11e8-8f24-63f387d5bb8f.jpg)
 
-Logo, caso sinta vontade de contribuir com o tema você pode achar ele [aqui](). Se você deseja publicar algo irei agora explicar como publicar.
+Logo, caso sinta vontade de contribuir com o tema você pode achar ele [aqui](https://github.com/rust-br/dinkleberg). Se você deseja publicar algo irei agora explicar como publicar.
 
 ## Contribuindo
 Existem dois jeitos de contribuir: MANUALMENTE pelo seu computador, ou direto pelo Github. Irei mostrar ambas!
 
 ### Manualmente
-- Faça um fork do repositório do blog: https://github.com/rust-br/blog
+- Faça um fork do repositório do blog: [https://github.com/rust-br/blog](https://github.com/rust-br/blog)
 - Clone ele na sua maquina
 - Entre na pasta
 - `git submodule init`
@@ -41,7 +41,7 @@ Existem dois jeitos de contribuir: MANUALMENTE pelo seu computador, ou direto pe
 OBS: Caso queira rodar local, instale o [gutenberg]() e rode `gutenberg --config config.toml serve`
 
 ### Pelo Github
-- Faça um fork do repositório do blog: https://github.com/rust-br/blog
+- Faça um fork do repositório do blog: [https://github.com/rust-br/blog](https://github.com/rust-br/blog)
 - Crie um branch
   - <img width="282" alt="captura de tela 2018-05-31 as 17 31 54" src="https://user-images.githubusercontent.com/10289071/40806737-c43910be-64f8-11e8-9070-487d052ae4dc.png">
 - Pelo próprio github acesse a pasta content, e clique em (Create new file / Criar novo arquivo no canto superior direito)
@@ -89,8 +89,8 @@ relative_posts=[
 ```
 
 ## Conclusão
-Dividir conhecimento é uma das melhores maneiras de aprender e/ou aprimorar um conhecimento enquanto ajuda pessoas que ainda não portam o mesmo. Um blog, dentro de uma comunidade, é um passo importante para o fortalecimento e difusão de conhecimento dentro dela. Não esqueça de entrar no grupo de telegrama, opinar em posts abrindo ***issues*** no Github. Leia também os códigos de consulta, seguiremos ele dentro da comunidade e consecutivamente no blog: 
+Dividir conhecimento é uma das melhores maneiras de aprender e/ou aprimorar um conhecimento enquanto ajuda pessoas que ainda não portam o mesmo. Um blog, dentro de uma comunidade, é um passo importante para o fortalecimento e difusão de conhecimento dentro dela. Não esqueça de entrar no grupo de telegrama, opinar em posts abrindo ***issues*** no Github. Leia também os códigos de consulta, seguiremos ele dentro da comunidade e consecutivamente no blog:
 
-https://www.rust-lang.org/pt-BR/conduct.html
+[https://www.rust-lang.org/pt-BR/conduct.html](https://www.rust-lang.org/pt-BR/conduct.html)
 
-Abraços e até a próxima
+Abraços e até a próxima!
