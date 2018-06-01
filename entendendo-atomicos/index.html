@@ -104,9 +104,9 @@
       <h1 id="resumao">Resumão</h1>
 <p>Neste post, explicarei o que são atômicos e como usá-los em Rust.</p>
 <h1 id="de-qualquer-forma-o-que-seria-um-atomico">"De qualquer forma, o que seria um 'atômico'?"</h1>
-<p>Atômicos são tipos de dados com operações indivisíveis, ou as próprias
-operações indivisíveis. Aqui indivisível significa que os efeitos dessas
-operações só são observáveis quando a operação já acabou. Normalmente as
+<p>Atômicos são tipos de dados com operações indivisíveis ou as próprias
+operações indivisíveis. Aqui, indivisível significa que os efeitos dessas
+operações só são observáveis quando a operação já acabou. Normalmente, as
 máquinas fornecem leitura e escrita tanto divisíveis quanto indivisíveis
 sobre os inteiros nativos.</p>
 <p>Se você já ouviu falar de &quot;<em>data races</em>&quot; (corrida de dados em tradução
@@ -115,19 +115,19 @@ máquina com palavra de 64 bits. Suponha <em>threads</em> <code>A</code>, <code>
 acesso ao endereço <code>p</code>. Se <code>A</code> faz uma escrita &quot;divisível&quot; de <code>x</code> em <code>p</code> ao
 mesmo tempo em que <code>C</code> faz uma leitura &quot;divisível&quot;, <code>C</code> pode ficar com metade
 dos bits anteriores de <code>p</code> e metade dos bits de <code>x</code>. Ou um quarto desses bits.
-Ou o estado anterior. Ou o novo estado. Na verdade, é difícil de prever. Se
-a thread <code>A</code> escreve &quot;divisivelmente&quot; <code>y</code> de novo em <code>p</code> ao mesmo tempo em que
-a thread <code>B</code> escreve &quot;divisivelmente&quot; <code>z</code>, o resultado de <code>p</code> pode ser uma
+Ou o estado anterior. Ou o novo estado. Na verdade, é difícil prever. Se
+a thread <code>A</code> escreve &quot;divisivelmente&quot; <code>y</code>, de novo em <code>p</code>, ao mesmo tempo em
+que a thread <code>B</code> escreve &quot;divisivelmente&quot; <code>z</code>, o resultado de <code>p</code> pode ser uma
 mistura de <code>y</code> e <code>z</code> ou algo similar.</p>
 <p>Pelo fato do comportamento variar em diferentes máquinas, as linguagens de
 programação como Rust e C++ definem <em>data races</em> como comportamento indefinido
 (<em>undefined behavior</em>). O comportamento real pode não ser &quot;deixar um estado
-intermediário&quot;, mas qualquer coisa, desde lançar uma exceção a botar fogo
-no processador. Você provavelmente deve ter notado que o problema aqui são
-as operações &quot;divisíveis&quot;. Se <code>A</code> tivesse escrito <code>x</code> em <code>p</code> atomicamente e
-<code>C</code> tivesse lido de <code>p</code> também atomicamente, <code>C</code> veria os bits de <code>p</code> ou antes
-ou depois da escirta de <code>A</code>, mas nunca no meio. O mesmo se aplica a <code>A</code> e <code>B</code>
-escrever atomicamente; o estado final seria ou <code>y</code> ou <code>z</code>, mas nada além disso.</p>
+intermediário&quot;, mas qualquer coisa, de &quot;lançar uma exceção&quot; até &quot;incendiar o
+processador&quot;. Você provavelmente deve ter notado que o problema aqui são as
+operações &quot;divisíveis&quot;. Se <code>A</code> tivesse escrito <code>x</code> em <code>p</code> atomicamente, e <code>C</code>
+tivesse lido de <code>p</code> também atomicamente, <code>C</code> veria os bits de <code>p</code> ou antes
+ou depois da escrita de <code>A</code>, mas nunca no meio. O mesmo se aplica à <code>A</code> e <code>B</code>
+escreverem atomicamente; o estado final seria ou <code>y</code> ou <code>z</code>, mas nada além disso.</p>
 <p>Há ainda a chamada &quot;<em>race condition</em>&quot; (condição de corrida). Condição de
 corrida é similar a <em>data race</em>, mas pode ocorrer até mesmo com atômicos.
 Race condition é sobre dependência da ordem de eventos assíncronos, mas
@@ -138,16 +138,16 @@ deve pensar com cuidado ao escrever código atômico.</p>
 <p>Atualmente (rust nightly 1.28 e stable 1.26) estes tipos de dados atômics
 foram estabilizados: <code>AtomicPtr&lt;T&gt;</code>, <code>AtomicUsize</code>, <code>AtomicIsize</code> and
 <code>AtomicBool</code>. Eles se localizam em <code>core::sync::atomic</code> (ou
-<code>std::sync::atomic</code>). Pra explicar, escolhi o mais simples: <code>AtomicBool</code>.</p>
+<code>std::sync::atomic</code>). Para explicar, escolhi o mais simples: <code>AtomicBool</code>.</p>
 <h2 id="atomicbool"><code>AtomicBool</code></h2>
-<p>É bastante simples de criar um <code>AtomicBool</code>:</p>
+<p>É bastante simples criar um <code>AtomicBool</code>:</p>
 <pre style="background-color:#282828">
 <span style="background-color:#282828;color:#fa5c4b;">let</span><span style="background-color:#282828;color:#fdf4c1aa;"> atomic_bool </span><span style="background-color:#282828;color:#fe8019;">= </span><span style="background-color:#282828;color:#fdf4c1aa;">AtomicBool::new(</span><span style="background-color:#282828;color:#d3869b;">true</span><span style="background-color:#282828;color:#fdf4c1aa;">);
 </span></pre>
 <p>Agora, vamos fazer leitura atômica! Mas espere... opa... <code>AtomicBool::load</code>
 (carregar) aceita dois argumentos: uma referência imutável para <code>self</code> e um
-argumento do tipo <code>Ordering</code>. A referência para <code>self</code> acredito de ser fácil de
-se entender, mas e o <code>Ordering</code>? <code>Ordering</code> é um tipo que determina a... a...
+argumento do tipo <code>Ordering</code>. A referência para <code>self</code> acredito ser fácil de
+entender, mas e o <code>Ordering</code>? <code>Ordering</code> é um tipo que determina a... a...
 ordem? Sim, a ordem relacionada às outras operações e às outras <em>threads</em>.
 Veja abaixo a definição de <code>Ordering</code>:</p>
 <pre style="background-color:#282828">
@@ -160,25 +160,26 @@ Veja abaixo a definição de <code>Ordering</code>:</p>
 </span><span style="background-color:#282828;color:#fdf4c1aa;">    </span><span style="background-color:#282828;font-style:italic;color:#928374;">// some variants omitted
 </span><span style="background-color:#282828;color:#fdf4c1aa;">}
 </span></pre>
-<p>Há, de modo ríspido, dois tipos de CPUs relacionados às orderns: os &quot;fracos&quot;
+<p>Há, de modo ríspido, dois tipos de CPUs relacionados às ordens: os &quot;fracos&quot;
 e os &quot;fortes&quot;. Os processadores &quot;fracos&quot; tem garantias naturalmente fracas a
 respeito das ordens, enquanto os processadores &quot;fortes&quot; tem garantias
 naturalmente fortes. Geralmente é de baixo custo para processadores &quot;fortes&quot;
-executarem <code>Acquire</code>, <code>Release</code> e <code>AcqRel</code>, enquanto isso é de alto custo para
-processadores &quot;fracos&quot;. Para todos eles <code>Relaxed</code> é de baixo custo e <code>SeqCst</code>
-é de alto custo. Exemplos de &quot;fracos&quot; são os das arquiteturas ARM em geral e
-exemplos de fortes são os de arquiteturas x86/x86-64.</p>
+executarem <code>Acquire</code>, <code>Release</code> e <code>AcqRel</code>. Enquanto isso, é de alto custo para
+processadores &quot;fracos&quot; executarem estas ordens. Para todos eles, <code>Relaxed</code> é de
+baixo custo, e <code>SeqCst</code> é de alto custo. Exemplos de processadores &quot;fracos&quot; são
+os das arquiteturas ARM em geral e exemplos de &quot;fortes&quot; são os de arquiteturas
+x86/x86-64.</p>
 <p>As únicas variantes válidas para se passar a <code>load</code> são: <code>Relaxed</code>. <code>Acquire</code> e
 <code>SeqCst</code>. Não se preocupe, as outras variantes serão explicadas já já. <code>Relaxed</code>
 é algo como &quot;a ordem não importa mesmo&quot;. Isso permite tanto o CPU quanto o
 compilador reordenarem a operação. <code>SeqCst</code> significa &quot;sequencialmente
-consistente&quot;; e não será reordenada de jeito nenhum. Tudo antes da operação
+consistente&quot;; e não será reordenada de jeito nenhum: tudo antes da operação
 acontence antes, e tudo depois da operação acontece depois.</p>
 <p><code>Acquire</code> é um pouco mais complexo. É o complementar de <code>Release</code>. Tudo
-(geralmente operações no estilo <code>store</code> (armazenar)) que acontecem depois de
-<code>Acquire</code> ficam depois do <code>Acquire</code>. Mas o compilador e o CPU são livres para
-reordenar tudo que ocorre antes do <code>Acquire</code>. Ele foi projetado para ser usado
-em operações do estilo <code>load</code> (carregar) enquanto adquirindo travas.</p>
+(geralmente operações no estilo <code>store</code>) que acontecem depois de
+<code>Acquire</code> ficam depois de <code>Acquire</code>. Mas o compilador e o CPU são livres para
+reordenar tudo que ocorre antes de <code>Acquire</code>. Ele foi projetado para ser usado
+em operações do estilo <code>load</code> (carregar) ao adquir travas.</p>
 <p>Vejamos um exemplo com <code>AtomicBool::load</code>:</p>
 <pre style="background-color:#282828">
 <span style="background-color:#282828;color:#fa5c4b;">use </span><span style="background-color:#282828;color:#fdf4c1aa;">std::sync::atomic::{
@@ -195,9 +196,9 @@ em operações do estilo <code>load</code> (carregar) enquanto adquirindo travas
 <p>Agora vamos para a próxima operação: <code>store</code> (armazenar). <code>store</code> aceita uma
 referência para <code>self</code>, o novo valor (do tipo <code>bool</code>) e um <code>Ordering</code>. Os
 <code>Orderings</code>s válidos são <code>Relaxed</code>, <code>Release</code> e <code>SeqCst</code>. <code>Release</code>, como já
-mencionado, é usado junto com <code>Acquire</code> como um par. Tudo antes de um <code>Release</code>
+mencionado, é usado junto a <code>Acquire</code> como um par. Tudo antes de um <code>Release</code>
 acontece antes dele, mas o CPU e o compilador são livres para reordenar tudo
-que acontece depois. A intenção é usá-lo ao soltar uma trava.</p>
+que há depois. A intenção é usá-lo ao soltar uma trava.</p>
 <p>Vejamos um exemplo:</p>
 <pre style="background-color:#282828">
 <span style="background-color:#282828;color:#fa5c4b;">use </span><span style="background-color:#282828;color:#fdf4c1aa;">std::sync::atomic::{
@@ -210,25 +211,25 @@ que acontece depois. A intenção é usá-lo ao soltar uma trava.</p>
 </span><span style="background-color:#282828;color:#fdf4c1aa;">}
 </span></pre>
 <p>Você pode ter percebido duas coisas. Se não as percebeu, perceba agora.
-Primeiro: <code>store</code> precisa de uma referencia apenas imutável. Isto significa que
+Primeiro: <code>store</code> precisa de uma referencia apenas imutável. Isso significa que
 ele não precisa de uma mutabilidade &quot;externa&quot;, mas o atômico tem mutabilidade
 interna. Segundo: atômicos só são úteis em referências compartilhadas. Eles não
 tem nada como <code>clone</code>; para clonar você pode fazer algo como
 <code>let copied = AtomicBool::new(src.load(Acquire));</code>. Mas isso não compartilha o
 atômico. Desse modo, é comum encapsular o atômico (ou a estrutura que mantém
 um) em um <code>Arc</code>.</p>
-<p>Há pelo menos outras três operações importantes: <code>swap</code>, <code>compare_and_swap</code>,
-<code>compare_exchange_*</code>. <code>swap</code> é bem simples: faz uma troca o argumento
+<p>Há, pelo menos, outras três operações importantes: <code>swap</code>, <code>compare_and_swap</code>,
+<code>compare_exchange_*</code>. <code>swap</code> (troca) é bastante simples: troca o argumento
 (do tipo <code>bool</code>) com o valor armazenado, e retorna o valor armazenado. <code>swap</code>
 aceita qualquer <code>Ordering</code>. <code>compare_and_swap</code> aceita um <code>bool</code>, dito &quot;atual&quot;,
 outro <code>bool</code>, dito &quot;novo&quot;, e o <code>Ordering</code> (qualquer um é válido).
-<code>compare_and_swap</code> é uma operação atômica bem importante. Ela compara o
+<code>compare_and_swap</code> é uma operação atômica bastante importante. Ela compara o
 argumento &quot;atual&quot; com o valor armazenado. Caso eles sejam iguais, a operação
 troca o valor armazenado com o argumento &quot;novo&quot;. De qualquer forma, o valor
-armazenado é retornado. A operação foi um sucesso se o valor retornado é
+armazenado é retornado. A operação obteve sucesso se o valor retornado é
 igual ao argumento &quot;atual&quot;.</p>
-<p>Há ainda <code>compare_exchange_strong</code> (apenas <code>compare_exchange</code> em Rust). e
-<code>compare_exchange_weak</code> (que pode falhar espontaneamente). Estes são similares
+<p>Há ainda <code>compare_exchange_strong</code> (apenas <code>compare_exchange</code> em Rust) e
+<code>compare_exchange_weak</code> (que pode falhar espontaneamente). Estas são similares
 a <code>compare_and_swap</code>, exceto pelo fato de que aceitam duas ordens: uma para
 o caso de sucesso e uma para o caso de falha. Além disso, em Rust elas retornam
 um <code>Result</code>. O fato delas retornarem um <code>Result</code> possibilita
@@ -237,15 +238,16 @@ Importante: a ordem de sucesso aceita as mesmas variantes que <code>swap</code>,
 falha tem de ser igual ou mais fraca do que a de sucesso, além de ser válida
 para um <code>load</code>.</p>
 <p>Calma aí! Eu não expliquei ainda <code>Ordering::AcqRel</code>. Ele é o que parece:
-combina <code>Acquire</code> ao carregar e <code>Release</code> ao armazenar para operações que
+combina <code>Acquire</code> ao carregar e <code>Release</code> ao armazenar, para operações que
 carregam e armazenam atomicamente. Apesar de eu ter explicado tudo isso
-usando <code>AtomicBool</code>, estas operações são bastante comuns entre tipos de
+usando <code>AtomicBool</code>, essas operações são bastante comuns entre tipos de
 dados atômicos primitivos. Todos os tipos de dados atômicos do Rust têm
 pelo menos estas operações: <code>load</code>, <code>store</code>, <code>swap</code>, <code>compare_and_swap</code>,
-<code>compare_exchange</code> e <code>compare_exchange_weak</code>. Chega de conversa, vamos agir.</p>
+<code>compare_exchange</code> e <code>compare_exchange_weak</code>. Enfim, chega de conversa.
+Vamos agir.</p>
 <h2 id="e-logico-livre-de-travas-lock-free">"E" lógico livre de travas (lock-free)</h2>
 <p>A função abaixo recebe um booleano atômico, um booleano normal, armazena
-o resultado de um &quot;E&quot; lógico entre eles e retorna o valor anterior.</p>
+o resultado de um &quot;E&quot; lógico entre eles, e retorna o valor anterior.</p>
 <pre style="background-color:#282828">
 <span style="background-color:#282828;color:#fa5c4b;">use </span><span style="background-color:#282828;color:#fdf4c1aa;">std::sync::atomic::{AtomicBool, Ordering::{</span><span style="background-color:#282828;color:#fe8019;">*</span><span style="background-color:#282828;color:#fdf4c1aa;">, </span><span style="background-color:#282828;color:#fdf4c1;">self</span><span style="background-color:#282828;color:#fdf4c1aa;">}};
 </span><span style="background-color:#282828;color:#fdf4c1aa;">
@@ -256,7 +258,7 @@ o resultado de um &quot;E&quot; lógico entre eles e retorna o valor anterior.</
 </span><span style="background-color:#282828;color:#fdf4c1aa;">        </span><span style="background-color:#282828;color:#fdf4c1aa;">o </span><span style="background-color:#282828;color:#fe8019;">=&gt;</span><span style="background-color:#282828;color:#fdf4c1aa;"> o,
 </span><span style="background-color:#282828;color:#fdf4c1aa;">    </span><span style="background-color:#282828;color:#fdf4c1aa;">});
 </span><span style="background-color:#282828;color:#fdf4c1aa;">    </span><span style="background-color:#282828;color:#fa5c4b;">loop </span><span style="background-color:#282828;color:#fdf4c1aa;">{
-</span><span style="background-color:#282828;color:#fdf4c1aa;">        </span><span style="background-color:#282828;color:#fa5c4b;">let</span><span style="background-color:#282828;color:#fdf4c1aa;"> inner </span><span style="background-color:#282828;color:#fe8019;">=</span><span style="background-color:#282828;color:#fdf4c1aa;"> x.</span><span style="background-color:#282828;color:#fabd2f;">compare_and_swap</span><span style="background-color:#282828;color:#fdf4c1aa;">(stored, stored </span><span style="background-color:#282828;color:#fe8019;">&amp;</span><span style="background-color:#282828;color:#fdf4c1aa;"> y, ord);
+</span><span style="background-color:#282828;color:#fdf4c1aa;">        </span><span style="background-color:#282828;color:#fa5c4b;">let</span><span style="background-color:#282828;color:#fdf4c1aa;"> inner </span><span style="background-color:#282828;color:#fe8019;">=</span><span style="background-color:#282828;color:#fdf4c1aa;"> x.</span><span style="background-color:#282828;color:#fabd2f;">compare_and_swap</span><span style="background-color:#282828;color:#fdf4c1aa;">(stored, stored </span><span style="background-color:#282828;color:#fe8019;">&amp;&amp;</span><span style="background-color:#282828;color:#fdf4c1aa;"> y, ord);
 </span><span style="background-color:#282828;color:#fdf4c1aa;">        </span><span style="background-color:#282828;color:#fa5c4b;">if</span><span style="background-color:#282828;color:#fdf4c1aa;"> inner </span><span style="background-color:#282828;color:#fe8019;">==</span><span style="background-color:#282828;color:#fdf4c1aa;"> stored {
 </span><span style="background-color:#282828;color:#fdf4c1aa;">            </span><span style="background-color:#282828;color:#fa5c4b;">break</span><span style="background-color:#282828;color:#fdf4c1aa;"> inner;
 </span><span style="background-color:#282828;color:#fdf4c1aa;">        </span><span style="background-color:#282828;color:#fdf4c1aa;">}
@@ -264,23 +266,23 @@ o resultado de um &quot;E&quot; lógico entre eles e retorna o valor anterior.</
 </span><span style="background-color:#282828;color:#fdf4c1aa;">    </span><span style="background-color:#282828;color:#fdf4c1aa;">}
 </span><span style="background-color:#282828;color:#fdf4c1aa;">}
 </span></pre>
-<p>Note que os efeitos da operação só são visíveis após acabarmos. Isto é, de
-algum modo, &quot;atômico&quot;. Geralmente, este tipo de operação é chamada &quot;lock-free&quot;
+<p>Note que os efeitos da operação só são visíveis após acabarmos. Ela é, de
+algum modo, &quot;atômica&quot;. Geralmente, esse tipo de operação é chamada &quot;lock-free&quot;
 (livre de travas) porque ela não usa nenhuma forma de trava. Por mais que
 tenhamos um loop de tentativas, nós não dependemos de nenhuma <em>thread</em>
-liberando o recurso. Não é uma trava.</p>
+liberando o recurso. Não é uma trava!</p>
 <p>E, bem... é... Rust já fornece um método <code>AtomicBool::fetch_and</code>
-(&quot;buscar 'e'&quot;), que provavelmente é traduzida para uma única instrução nativa.
-Eu quis apenas mostrar que você pode implementá-la com os primitivos <code>load</code> e
+(&quot;buscar 'e'&quot;), que provavelmente é compilado para uma única instrução nativa.
+Eu quis apenas mostrar que você pode implementá-lo com os primitivos <code>load</code> e
 <code>compare_and_swap</code> via <em>software</em>.
 <a href="https://doc.rust-lang.org/std/sync/atomic/struct.AtomicBool.html#method.fetch_and">Dê uma olhada aqui</a>,
-Temos outras operações em <code>AtomicBool</code>, tais como <code>nand</code> (&quot;não 'e'&quot;), <code>or</code>
+temos outras operações em <code>AtomicBool</code>, tais como <code>nand</code> (&quot;não 'e'&quot;), <code>or</code>
 (&quot;ou&quot;) e <code>xor</code> (&quot;ou exclusivo&quot;).</p>
 <p>Como você deve suspeitar, <code>AtomicUsize</code> e <code>AtomicIsize</code> tem seus próprios
 métodos com aritmética básica (adição e subtração) e bits. Todos eles são
-implementáveis via software, mas provavelmente são traduzidos em uma única
-instrução nativa. Apesar de a API não fornecer multiplicação e divisão,
-não é difícil de implementá-las.</p>
+implementáveis via software, mas provavelmente são implementados para compilar
+para uma única instrução nativa. Apesar de a API não fornecer multiplicação e
+divisão, não é difícil de implementá-las.</p>
 <h2 id="nota-sobre">Nota sobre <code>AtomicPtr<T></code></h2>
 <p><code>AtomicPtr&lt;T&gt;</code> pode ser confuso. Os métodos <code>load</code> e <code>store</code> leem e escrevem
 o endereço ou o conteúdo do endereço? A resposta é: o endereço. Eles operam
@@ -292,7 +294,7 @@ bastante importantes em ambientes concorrentes. <code>T: Send</code> significa q
 seguro de ser mandado para outra <em>thread</em>. <code>T: Sync</code> significa que <code>&amp;T</code> é
 seguro de ser compartilhado entre <em>threads</em>. Tipos de dados atômicos
 implementam tanto <code>Send</code> quanto <code>Sync</code>, então é seguro mandar e compartilhar
-estes tipos através de <em>threads</em>.</p>
+esses tipos com <em>threads</em>.</p>
 <h2 id="bonus-implementacao-de-spinlock">Bônus: implementação de spinlock</h2>
 <pre style="background-color:#282828">
 <span style="background-color:#282828;color:#fa5c4b;">pub mod </span><span style="background-color:#282828;color:#8ec07c;">spinlock </span><span style="background-color:#282828;color:#fdf4c1aa;">{

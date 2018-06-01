@@ -271,9 +271,9 @@ be implemented via software.
 we have other methods on <code>AtomicBool</code>, such as <code>nand</code>, <code>or</code>, and <code>xor</code>.</p>
 <p>As you may suspect, <code>AtomicUsize</code> and <code>AtomicIsize</code> have their own methods with
 basic arithmetic (add and sub) and bitwise. And all of them are implementable
-via software, but probably are translated into a single native instruction.
-Although the API does not provide <code>mul</code> and <code>div</code>, it is not hard to implement
-them.</p>
+via software, but probably are implemented in such a way they are translated
+into a single native instruction. Although the API does not provide <code>mul</code> and
+<code>div</code>, it is not hard to implement them.</p>
 <h2 id="a-note-on">A note on <code>AtomicPtr<T></code></h2>
 <p><code>AtomicPtr&lt;T&gt;</code> can be confusing. The methods <code>load</code> and <code>store</code> read and write
 the address or its content? The answer is: the address. They operate on <code>*mut T</code>.
