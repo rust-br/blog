@@ -15,6 +15,8 @@ generate_tags_pages = true
 generate_categories_pages = true
 
 [extra]
+blog_logo = "/imgs/common/logo.png"
+blog_title="rust::br::Blog"
 label_tags = "Tags"
 label_tag = "Tag"
 label_categories = "Categorias"
@@ -28,5 +30,8 @@ sidebar = [
     {name = "Social", urls=[
         {name="Telegram", url="https://t.me/rustlangbr"},
         {name="Github", url="https://github.com/rust-br"},
+    ]},
+    {name = "Divida Conhecimento!", urls=[
+        {name="Contribuir!", url="https://rust-br.github.io/blog/hello-world"}
     ]}
 ]
