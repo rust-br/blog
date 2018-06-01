@@ -211,9 +211,9 @@ we have other methods on `AtomicBool`, such as `nand`, `or`, and `xor`.
 
 As you may suspect, `AtomicUsize` and `AtomicIsize` have their own methods with
 basic arithmetic (add and sub) and bitwise. And all of them are implementable
-via software, but probably are translated into a single native instruction.
-Although the API does not provide `mul` and `div`, it is not hard to implement
-them.
+via software, but probably are implemented in such a way they are translated
+into a single native instruction. Although the API does not provide `mul` and
+`div`, it is not hard to implement them.
 
 ## A note on `AtomicPtr<T>`
 
