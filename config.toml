@@ -1,8 +1,8 @@
 base_url = "https://rust-br.github.io/blog"
 
 # RSS
-title = "RustBR Blog"
-description = "Um blog com conteudo brasileiro sobre Rust Lang"
+title = "Rust Brasil: Dividindo conhecimento sobre a linguagem Rust"
+description = "Um blog com conteúdo focado no público brasileiro escrito, grande parte, em português sobre a linguagem de programção Rust"
 default_language = "pt"
 
 theme = "dinkleberg"
@@ -16,7 +16,7 @@ generate_categories_pages = true
 
 [extra]
 blog_logo = "/imgs/common/logo.png"
-blog_title="rust::br::Blog"
+blog_title="rust::brasil::Blog"
 label_tags = "Tags"
 label_tag = "Tag"
 label_categories = "Categorias"
@@ -26,6 +26,15 @@ label_next = "Próxima"
 label_previous = "Anterior"
 label_page = "Página"
 label_of = "de"
+
+og_image="https://rust-br.github.io/blog/imgs/common/base_og_image.png"
+og_alt_image="Rust Brasil Blog"
+og_site_name="Rust Brasil Blog"
+keywords="Rust, Lang, Language, Linguagem de Programação, Desenvolvimento, Brazil, Brasil"
+
+educational_use="knowledge share"
+copyright_year="2018"
+
 sidebar = [
     {name = "Social", urls=[
         {name="Telegram", url="https://t.me/rustlangbr"},
